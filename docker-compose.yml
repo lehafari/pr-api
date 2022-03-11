@@ -1,0 +1,24 @@
+version: '3.1'
+services:
+  pr-db:
+    container_name: pr-db
+    image: postgres
+    environment:
+      - POSTGRES_PASSWORD=79zsh7UFG5wQBbfdeH8Q
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=prseconecta
+    ports:
+      - 5432:5432
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+
+  pr_pgadmin:
+    container_name: pr_pgadmin
+    image: dpage/pgadmin4
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=prseconecta@project.com
+      - PGADMIN_DEFAULT_PASSWORD=prseconecta
+    ports:
+      - 5001:80
+    depends_on:
+      - pr-db
