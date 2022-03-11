@@ -7,4 +7,5 @@ export default joi.object({
   DB_PASSWORD: joi.string().required(),
   DB_NAME: joi.string().required(),
   JWT_SECRET: joi.string().required(),
+  PORT: joi.number(),
 });
