@@ -6,6 +6,8 @@ import { UsersRepository } from '../repositories/users.repository';
 @Injectable()
 export class UsersService {
   constructor(private usersRepository: UsersRepository) {}
+
+  //***** Create User *****//
   async createUser(crateUserDto: CreateUserDto): Promise<User> {
     try {
       const userEntity = await this.usersRepository.create({ ...crateUserDto });
@@ -19,7 +21,9 @@ export class UsersService {
       throw error();
     }
   }
-  async findUserByEmail(email: string): Promise<User> {
-    return await this.usersRepository.findOne({ email });
+
+  //***** Find By User or Email*****//
+  async findByUserOrEmail(userOrEmail: string): Promise<User> {
+    return await this.usersRepository.findByUserOrEmail(userOrEmail);
   }
 }

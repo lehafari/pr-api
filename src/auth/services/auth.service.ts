@@ -25,8 +25,10 @@ export class AuthService {
 
   //***** Login *****//
   async login(loginDto: LoginDto): Promise<LoginResponse> {
-    // Buscamos usuario por email
-    const user = await this.usersService.findUserByEmail(loginDto.userOrEmail);
+    // Buscamos por el usuario o el email
+    const user = await this.usersService.findByUserOrEmail(
+      loginDto.userOrEmail,
+    );
     if (!user) throw new BadRequestException('Usuario no existe');
     // Verificamos la contraseña
     const verify = this.verifyPassword(loginDto.password, user.password);
@@ -38,6 +40,7 @@ export class AuthService {
         { userId: user.id, email: user.email, role: user.role },
         {
           secret: this.configService.jwt.secret,
+          expiresIn: '6h',
         },
       ),
     };
