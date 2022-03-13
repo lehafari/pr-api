@@ -10,6 +10,7 @@ export class UsersService {
     try {
       const userEntity = await this.usersRepository.create({ ...crateUserDto });
       const user = await this.usersRepository.save(userEntity);
+      delete user.password;
       return user;
     } catch (error) {
       if (error.code === '23505') {
@@ -17,5 +18,8 @@ export class UsersService {
       }
       throw error();
     }
+  }
+  async findUserByEmail(email: string): Promise<User> {
+    return await this.usersRepository.findOne({ email });
   }
 }
