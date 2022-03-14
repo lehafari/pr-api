@@ -1,5 +1,6 @@
 import { genSaltSync, hashSync } from 'bcryptjs';
 import { Exclude } from 'class-transformer';
+import { Property } from 'src/properties/models/property.model';
 
 import {
   Entity,
@@ -10,6 +11,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   Unique,
+  OneToMany,
 } from 'typeorm';
 import { Roles } from '../enum/roles.enum';
 
@@ -61,6 +63,9 @@ export class User {
 
   @Column({ enum: Roles, default: Roles.USER })
   role: Roles;
+
+  @OneToMany(() => Property, (property) => property.user)
+  properties: Property[];
 
   @BeforeInsert()
   @BeforeUpdate()
