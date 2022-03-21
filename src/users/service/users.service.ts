@@ -16,7 +16,7 @@ export class UsersService {
       return user;
     } catch (error) {
       if (error.code === '23505') {
-        throw new ForbiddenException('Usuario o contraseña incorrecta');
+        throw new ForbiddenException('El usuario o el email ya existen');
       }
       throw error();
     }
