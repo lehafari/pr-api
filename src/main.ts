@@ -22,7 +22,7 @@ async function bootstrap() {
       showRequestDuration: true,
     },
   });
-
+  app.enableCors();
   //*****ValidationPipe config *****/
   app.useGlobalPipes(new ValidationPipe());
 

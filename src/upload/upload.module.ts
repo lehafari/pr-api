@@ -1,13 +1,13 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 
+@Global()
 @Module({
   imports: [
-    MulterModule.registerAsync({
-      useFactory: () => ({
-        dest: './upload',
-      }),
+    MulterModule.register({
+      dest: './upload',
     }),
   ],
+  controllers: [],
 })
 export class UploadModule {}
