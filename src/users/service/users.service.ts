@@ -24,6 +24,10 @@ export class UsersService {
 
   //***** Find By User or Email*****//
   async findByUserOrEmail(userOrEmail: string): Promise<User> {
-    return await this.usersRepository.findByUserOrEmail(userOrEmail);
+    const user = await this.usersRepository.findByUserOrEmail(userOrEmail);
+    if (!user) {
+      throw new ForbiddenException('El usuario no existe');
+    }
+    return user;
   }
 }
