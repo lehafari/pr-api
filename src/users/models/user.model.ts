@@ -49,9 +49,6 @@ export class User {
   @Column({ nullable: true })
   fiscaladdress: string;
 
-  @Column({ default: true })
-  status: boolean;
-
   @Column({ default: false })
   image: string;
 
