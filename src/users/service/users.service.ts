@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/createUser.dto';
 import { User } from '../models/user.model';
 import { UsersRepository } from '../repositories/users.repository';
@@ -16,7 +16,7 @@ export class UsersService {
       return user;
     } catch (error) {
       if (error.code === '23505') {
-        throw new ForbiddenException('El usuario o el email ya existen');
+        throw new Error('El usuario ya existe');
       }
       throw error();
     }
@@ -26,7 +26,7 @@ export class UsersService {
   async findByUserOrEmail(userOrEmail: string): Promise<User> {
     const user = await this.usersRepository.findByUserOrEmail(userOrEmail);
     if (!user) {
-      throw new ForbiddenException('El usuario no existe');
+      throw new Error('El usuario no existe');
     }
     return user;
   }
