@@ -2,7 +2,6 @@ import {
   Controller,
   Get,
   Param,
-  Post,
   Put,
   Res,
   UploadedFile,
@@ -12,8 +11,8 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from '../service/users.service';
-import { RoleGuard } from '../../auth/guards/roles.guard';
-import { Roles } from '../enum/roles.enum';
+// import { RoleGuard } from '../../auth/guards/roles.guard';
+// import { Roles } from '../enum/roles.enum';
 import { User } from '../models/user.model';
 import { GetUser } from '../decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -33,15 +32,14 @@ export class UsersController {
   @ApiOperation({ summary: 'Get actual user' })
   @Get('me')
   getActualUser(@GetUser() user: User): Promise<User> {
-    console.log(user);
     return this.usersService.findByUserOrEmail(user.email);
   }
 
   //***** Upload Profile image*****//
-  @UseGuards(AuthGuard('jwt'), RoleGuard(Roles.USER && Roles.ADMIN))
+  @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Upload profile image' })
-  @Put('upload')
+  @Put('profileImage/upload')
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
@@ -51,18 +49,22 @@ export class UsersController {
       fileFilter: imageFileFilter,
     }),
   )
-  async uploadedFile(@UploadedFile() file, @GetUser() user) {
+  async uploadedFile(@UploadedFile() file, @GetUser() user): Promise<number> {
     try {
       file.user = user.userId;
       const profileImage = file;
-      return this.usersService.saveProfileImage(profileImage);
+      return this.usersService.uploadProfileImage(profileImage);
     } catch (error) {
-      console.log(error);
       return error;
     }
   }
-  @Get(':imgpath')
-  seeUploadedFile(@Param('imgpath') image, @Res() res) {
-    return res.sendFile(image, { root: './files' });
+
+  //***** Get Profile Image*****//
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get profile image' })
+  @Get('profileImage/:imgpath')
+  seeUploadedFile(@Param('imgpath') image: string, @Res() res): any {
+    return this.usersService.getProfileImage(image, res);
   }
 }

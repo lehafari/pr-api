@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import * as compression from 'compression';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -25,6 +26,9 @@ async function bootstrap() {
   app.enableCors();
   //*****ValidationPipe config *****/
   app.useGlobalPipes(new ValidationPipe());
+
+  //*****Compression config *****//
+  app.use(compression());
 
   //! start app //
   await app.listen(port);

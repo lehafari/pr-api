@@ -1,7 +1,12 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from 'src/users/dto/createUser.dto';
 import { User } from '../models/user.model';
 import { UsersRepository } from '../repositories/users.repository';
+import * as fs from 'fs';
 
 @Injectable()
 export class UsersService {
@@ -22,11 +27,21 @@ export class UsersService {
     }
   }
 
-  //***** Save profile image *****//
+  //***** Upload profile image *****//
 
-  async saveProfileImage(profileImage: any) {
-    const user = await this.usersRepository.saveProfileImage(profileImage);
-    return user;
+  async uploadProfileImage(profileImage: any) {
+    const response = await this.usersRepository.saveProfileImage(profileImage);
+    return response;
+  }
+
+  //***** Get Profile Image *****//
+  getProfileImage(image: string, res): any {
+    if (!fs.existsSync(`./files/${image}`)) {
+      throw new NotFoundException('No existe la imagen');
+    }
+    const img = res.sendFile(image, { root: './files' });
+    console.log(img);
+    return img;
   }
 
   //***** Find By User or Email*****//
