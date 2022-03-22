@@ -9,4 +9,14 @@ export class UsersRepository extends Repository<User> {
       where: [{ user: userOrEmail }, { email: userOrEmail }],
     });
   }
+
+  //***** Upload Profile image *****//
+  async saveProfileImage(profileImage: any) {
+    const user = await this.createQueryBuilder()
+      .update(User)
+      .set({ image: profileImage.filename })
+      .where('id = :id', { id: profileImage.user })
+      .execute();
+    return user;
+  }
 }

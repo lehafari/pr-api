@@ -1,7 +1,10 @@
 import {
   Controller,
   Get,
+  Param,
   Post,
+  Put,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -14,6 +17,8 @@ import { Roles } from '../enum/roles.enum';
 import { User } from '../models/user.model';
 import { GetUser } from '../decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { editFileName, imageFileFilter } from 'src/upload';
 
 @ApiTags('Users')
 @Controller('users')
@@ -23,10 +28,7 @@ export class UsersController {
   //! Disponible para todos los roles !//
 
   //***** Get actual user *****//
-  @UseGuards(
-    AuthGuard('jwt'),
-    RoleGuard(Roles.USER && Roles.ADMIN && Roles.AGENT),
-  )
+  @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get actual user' })
   @Get('me')
@@ -39,13 +41,28 @@ export class UsersController {
   @UseGuards(AuthGuard('jwt'), RoleGuard(Roles.USER && Roles.ADMIN))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Upload profile image' })
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('image'))
-  async uploadedFile(@UploadedFile() file) {
-    const response = {
-      originalname: file.originalname,
-      filename: file.filename,
-    };
-    return response;
+  @Put('upload')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './files',
+        filename: editFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  async uploadedFile(@UploadedFile() file, @GetUser() user) {
+    try {
+      file.user = user.userId;
+      const profileImage = file;
+      return this.usersService.saveProfileImage(profileImage);
+    } catch (error) {
+      console.log(error);
+      return error;
+    }
+  }
+  @Get(':imgpath')
+  seeUploadedFile(@Param('imgpath') image, @Res() res) {
+    return res.sendFile(image, { root: './files' });
   }
 }

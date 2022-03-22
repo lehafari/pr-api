@@ -22,6 +22,13 @@ export class UsersService {
     }
   }
 
+  //***** Save profile image *****//
+
+  async saveProfileImage(profileImage: any) {
+    const user = await this.usersRepository.saveProfileImage(profileImage);
+    return user;
+  }
+
   //***** Find By User or Email*****//
   async findByUserOrEmail(userOrEmail: string): Promise<User> {
     const user = await this.usersRepository.findByUserOrEmail(userOrEmail);
