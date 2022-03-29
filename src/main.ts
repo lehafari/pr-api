@@ -7,7 +7,8 @@ import * as compression from 'compression';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT || 3333;
-  //*****Swagger config *****/
+
+  //*****Swagger config *****//
   const swagger = new DocumentBuilder()
     .setTitle('Prseconecta-api')
     .setDescription('Prseconecta-api')
@@ -23,7 +24,10 @@ async function bootstrap() {
       showRequestDuration: true,
     },
   });
+
+  //***** Cors Enabled *****//
   app.enableCors();
+
   //*****ValidationPipe config *****/
   app.useGlobalPipes(new ValidationPipe());
 

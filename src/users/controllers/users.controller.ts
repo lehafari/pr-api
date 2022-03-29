@@ -1,5 +1,7 @@
 import {
+  BadRequestException,
   Controller,
+  Delete,
   Get,
   Param,
   Put,
@@ -9,15 +11,18 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { UsersService } from '../service/users.service';
-// import { RoleGuard } from '../../auth/guards/roles.guard';
-// import { Roles } from '../enum/roles.enum';
+import { RoleGuard } from '../../auth/guards/roles.guard';
+import { Roles } from '../enum/roles.enum';
 import { User } from '../models/user.model';
 import { GetUser } from '../decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { editFileName, imageFileFilter } from 'src/upload';
+import { confirmPasswordDto, updateUserDto } from '../dto';
+import { PayloadJwt } from '../types';
+import { Body } from '@nestjs/common';
 
 @ApiTags('Users')
 @Controller('users')
@@ -31,8 +36,17 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get actual user' })
   @Get('me')
-  getActualUser(@GetUser() user: User): Promise<User> {
+  getActualUser(@GetUser() user: PayloadJwt): Promise<User> {
     return this.usersService.findByUserOrEmail(user.email);
+  }
+
+  //***** Get Profile Image*****//
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get profile image' })
+  @Get('profileImage/:imgpath')
+  seeUploadedFile(@Param('imgpath') image: string, @Res() res): any {
+    return this.usersService.getProfileImage(image, res);
   }
 
   //***** Upload Profile image*****//
@@ -55,16 +69,64 @@ export class UsersController {
       const profileImage = file;
       return this.usersService.uploadProfileImage(profileImage);
     } catch (error) {
-      return error;
+      throw new BadRequestException(
+        error.message || 'Ha ocurrido un error subiendo la imagen',
+      );
     }
   }
 
-  //***** Get Profile Image*****//
+  //***** Update user*****//
+
   @UseGuards(AuthGuard('jwt'))
+  @ApiBody({ type: updateUserDto })
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get profile image' })
-  @Get('profileImage/:imgpath')
-  seeUploadedFile(@Param('imgpath') image: string, @Res() res): any {
-    return this.usersService.getProfileImage(image, res);
+  @ApiOperation({ summary: 'Update user' })
+  @Put('update')
+  async updateUser(
+    @GetUser() User: PayloadJwt,
+    @Body() UpdateUser: updateUserDto,
+  ) {
+    try {
+      return await this.usersService.updateUser(User.userId, UpdateUser);
+    } catch (error) {
+      throw new BadRequestException(
+        error.message || 'Ha ocurrido un error actualizando el usuario',
+      );
+    }
+  }
+
+  //***** Delete user *****//
+
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBody({ type: confirmPasswordDto })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete user' })
+  @Delete('delete')
+  async deleteUser(
+    @GetUser() user: PayloadJwt,
+    @Body() confirmPassword: confirmPasswordDto,
+  ) {
+    try {
+      return await this.usersService.deleteUser(
+        user.userId,
+        confirmPassword.password,
+      );
+    } catch (error) {
+      console.log(error);
+      throw new BadRequestException(
+        error.message || 'Ha ocurrido un error eliminando el usuario',
+      );
+    }
+  }
+
+  //! Disponible solo para el rol ADMIN !//
+
+  //***** Get all users *****//
+  @UseGuards(AuthGuard('jwt'), RoleGuard(Roles.ADMIN))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all users' })
+  @Get('all')
+  async getAllUsers(): Promise<User[]> {
+    return this.usersService.getAllUsers();
   }
 }
